@@ -128,7 +128,8 @@ function getServerFromClientOptions(clientOptions: ClientOptions) {
   const rawOptions = clientOptions as Record<string, unknown>;
   return typeof rawOptions.liveblocksServer === "string"
     ? rawOptions.liveblocksServer
-    : "wss://api.liveblocks.io/v6";
+    : // XXX Restore to "wss://api.liveblocks.io/v7"
+      "wss://nvie-dev.dev-liveblocks5948.workers.dev/v7";
 }
 
 /**
