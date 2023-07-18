@@ -19,7 +19,7 @@ export type LiveblocksOptions = {
   /**
    * @internal
    * Allow overriding the base URL for testing purposes only.
-   * Default value is https://api.liveblocks.io
+   * Default value is https://nvie-dev.dev-liveblocks5948.workers.dev
    */
   liveblocksBaseUrl?: string;
 };
@@ -28,7 +28,7 @@ export type CreateSessionOptions = {
   userInfo: unknown;
 };
 
-const DEFAULT_BASE_URL = "https://api.liveblocks.io";
+const DEFAULT_BASE_URL = "https://nvie-dev.dev-liveblocks5948.workers.dev";
 
 export type AuthResponse = {
   status: number;

@@ -124,7 +124,7 @@ export async function authorize(
   } catch (er) {
     return {
       status: 503 /* Service Unavailable */,
-      body: 'Call to "https://api.liveblocks.io/v2/rooms/:roomId/authorize" failed. See "error" for more information.',
+      body: 'Call to "https://nvie-dev.dev-liveblocks5948.workers.dev/v2/rooms/:roomId/authorize" failed. See "error" for more information.',
       error: er as Error | undefined,
     };
   }
@@ -138,7 +138,7 @@ function buildLiveblocksAuthorizeEndpoint(
     return options.liveblocksAuthorizeEndpoint.replace("{roomId}", roomId);
   }
 
-  return `https://api.liveblocks.io/v2/rooms/${encodeURIComponent(
+  return `https://nvie-dev.dev-liveblocks5948.workers.dev/v2/rooms/${encodeURIComponent(
     roomId
   )}/authorize`;
 }
