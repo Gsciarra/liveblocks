@@ -2367,7 +2367,19 @@ export function makeAuthDelegateForRoom(
   authManager: AuthManager
 ): () => Promise<AuthValue> {
   return async () => {
-    return authManager.getAuthValue("room:read", roomId);
+    const rv = authManager.getAuthValue("room:read", roomId);
+    // ---------- DEBUG LOGGING -----------------------------
+    return rv.then((v) => {
+      console.warn(
+        "DEBUG: authenticate delegate called",
+        roomId,
+        "room:read",
+        "→",
+        v
+      );
+      return v;
+    });
+    // ---------- DEBUG LOGGING -----------------------------
   };
 }
 
@@ -2377,6 +2389,14 @@ export function makeCreateSocketDelegateForRoom(
   WebSocketPolyfill?: IWebSocket
 ) {
   return (authValue: AuthValue): IWebSocketInstance => {
+    // ---------- DEBUG LOGGING -----------------------------
+    console.warn(
+      "DEBUG: createSocket delegate called",
+      liveblocksServer,
+      roomId,
+      authValue
+    );
+    // ---------- DEBUG LOGGING -----------------------------
     const ws: IWebSocket | undefined =
       WebSocketPolyfill ??
       (typeof WebSocket === "undefined" ? undefined : WebSocket);
@@ -2397,7 +2417,14 @@ export function makeCreateSocketDelegateForRoom(
       return assertNever(authValue, "Unhandled case");
     }
     url.searchParams.set("version", PKG_VERSION || "dev");
-    return new ws(url.toString());
+    // ---------- DEBUG LOGGING -----------------------------
+    try {
+      return new ws(url.toString());
+    } catch (e) {
+      console.error("createSocket delegate failed", String(e));
+      throw e;
+    }
+    // ---------- DEBUG LOGGING -----------------------------
   };
 }
 
