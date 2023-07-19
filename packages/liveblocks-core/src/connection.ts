@@ -1,11 +1,13 @@
 import { assertNever } from "./lib/assert";
+import { controlledPromise } from "./lib/controlledPromise";
 import type { Observable } from "./lib/EventSource";
 import { makeEventSource } from "./lib/EventSource";
 import * as console from "./lib/fancy-console";
 import type { BuiltinEvent, Patchable, Target } from "./lib/fsm";
 import { FSM } from "./lib/fsm";
 import type { Json } from "./lib/Json";
-import { withTimeout } from "./lib/utils";
+import { tryParseJson, withTimeout } from "./lib/utils";
+import { ServerMsgCode } from "./protocol/ServerMsg";
 import type {
   IWebSocketCloseEvent,
   IWebSocketEvent,
@@ -563,6 +565,17 @@ function createConnectionStateMachine<T extends BaseAuthResult>(
               rej(event);
             }
 
+            const [gotRoomState, roomState$] = controlledPromise<void>();
+
+            function watchForRoomStateMessage(event: IWebSocketMessageEvent) {
+              const serverMsg = tryParseJson(event.data as string) as
+                | Record<string, Json>
+                | undefined;
+              if (serverMsg?.type === ServerMsgCode.ROOM_STATE) {
+                gotRoomState();
+              }
+            }
+
             //
             // Part 1:
             // The `error` and `close` event handlers marked (*) are installed
@@ -570,6 +583,7 @@ function createConnectionStateMachine<T extends BaseAuthResult>(
             // When those get triggered, we reject this promise.
             //
             socket.addEventListener("message", onSocketMessage);
+            socket.addEventListener("message", watchForRoomStateMessage);
             socket.addEventListener("error", reject); // (*)
             socket.addEventListener("close", reject); // (*)
             socket.addEventListener("open", () => {
@@ -603,10 +617,18 @@ function createConnectionStateMachine<T extends BaseAuthResult>(
               const unsub = () => {
                 socket.removeEventListener("error", reject); // Remove (*)
                 socket.removeEventListener("close", reject); // Remove (*)
+                socket.removeEventListener("message", watchForRoomStateMessage);
               };
 
-              // Resolve the promise, which will take us to the @ok.* state
-              resolve([socket, unsub]);
+              // Resolve the promise only once we received a ROOM_STATE message
+              // from the server, which will take us to the @ok.* state. This
+              // will act as a gate keeper, delaying the state transition to
+              // @ok.* state until the actor ID is known.
+              // All messages received so far will be played back to the client
+              // after the transition to "connected".
+              void roomState$.then(() => {
+                resolve([socket, unsub]);
+              });
             });
           }
         );
