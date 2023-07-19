@@ -10,8 +10,9 @@ const client = createClient({
     "Please set NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY in the env"
   ),
 
-  // @ts-expect-error - Hidden setting
+  // @ts-expect-error - Hidden settings
   liveblocksServer: process.env.NEXT_PUBLIC_LIVEBLOCKS_SERVER,
+  enableDebugLogging: true,
 });
 
 const { RoomProvider, useMyPresence, useSelf, useOthers, useStatus } =

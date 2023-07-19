@@ -5,6 +5,8 @@ import { createRoomContext } from "@liveblocks/react";
 
 const client = createClient({
   authEndpoint: "/api/auth/id-token",
+  // @ts-expect-error - Hidden setting
+  enableDebugLogging: true,
 });
 
 const { RoomProvider, useMyPresence, useSelf, useOthers, useStatus } =
